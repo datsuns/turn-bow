@@ -8,6 +8,9 @@ web:
 android:
 	flutter run -d emulator-5554 --dart-define=BASE_URL=$(BASE_URL)
 
+emu:
+	flutter emulators --launch Pixel_7_API_34
+
 build_web:
 	flutter build web --dart-define=BASE_URL=$(BASE_URL)
 
