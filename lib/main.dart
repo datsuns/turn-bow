@@ -56,6 +56,64 @@ class _SheetListScreenState extends State<SheetListScreen> {
     memoController_.clear();
   }
 
+
+void _showYearlyDataDialog() {
+  final yearController = TextEditingController();
+  final memoController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('年別データを追加'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: yearController,
+              decoration: const InputDecoration(labelText: '年'),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: memoController,
+              decoration: const InputDecoration(labelText: 'メモ'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('キャンセル'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final year = yearController.text.trim();
+              final memo = memoController.text.trim();
+              if (year.isEmpty) return;
+
+              final data = {
+                '年': year,
+                'メモ': memo,
+              };
+
+              try {
+                await SheetService.postYearlyData(selectedSheet_!, data);
+                Navigator.of(context).pop();
+                _loadSheetData(selectedSheet_!);
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('追加に失敗: $e')),
+                );
+              }
+            },
+            child: const Text('追加する'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,29 +134,6 @@ class _SheetListScreenState extends State<SheetListScreen> {
             },
           ),
           const Divider(),
-          if (selectedSheet_ != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('🆕 年別データ追加'),
-                  TextField(
-                    controller: yearController_,
-                    decoration: const InputDecoration(labelText: '年'),
-                  ),
-                  TextField(
-                    controller: memoController_,
-                    decoration: const InputDecoration(labelText: 'メモ'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _submitYearlyData,
-                    child: const Text('追加する'),
-                  ),
-                ],
-              ),
-            ),
-          const Divider(),
           if (sheetData_ != null)
             Expanded(
               child: ListView(
@@ -118,22 +153,34 @@ class _SheetListScreenState extends State<SheetListScreen> {
                         DataColumn(label: Text('値')),
                       ],
                       rows:
-                          sheetData_!['fixedValues'].entries.map<DataRow>((e) {
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(e.key)),
-                                DataCell(Text(e.value.toString())),
-                              ],
-                            );
-                          }).toList(),
+                          sheetData_!['fixedValues'].entries
+                              .map<DataRow>(
+                                (e) => DataRow(
+                                  cells: [
+                                    DataCell(Text(e.key)),
+                                    DataCell(Text(e.value.toString())),
+                                  ],
+                                ),
+                              )
+                              .toList(),
                     ),
                   ),
                   const Divider(),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      '📅 年別データ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          '📅 年別データ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _showYearlyDataDialog,
+                          icon: const Icon(Icons.add),
+                          label: const Text('追加'),
+                        ),
+                      ],
                     ),
                   ),
                   if (sheetData_!['yearlyData'].length > 1)
