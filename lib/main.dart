@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'services/sheet_service.dart';
 
@@ -18,6 +19,8 @@ class _SheetListScreenState extends State<SheetListScreen> {
   List<String> sheetNames_ = [];
   String? selectedSheet_;
   Map<String, dynamic>? sheetData_;
+  TextEditingController yearController_ = TextEditingController();
+  TextEditingController memoController_ = TextEditingController();
 
   @override
   void initState() {
@@ -40,6 +43,22 @@ class _SheetListScreenState extends State<SheetListScreen> {
     });
   }
 
+  Future<void> _submitYearlyData() async {
+    if (selectedSheet_ == null) return;
+    final data = {
+      '年': yearController_.text,
+      '収穫量': '310kg',
+      '苗の量': '10袋',
+      '肥料の量': '15kg',
+      '殺虫剤の量': '3L',
+      'メモ': memoController_.text,
+    };
+    await SheetService.postYearlyData(selectedSheet_!, data);
+    await _loadSheetData(selectedSheet_!); // 反映
+    yearController_.clear();
+    memoController_.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,6 +77,29 @@ class _SheetListScreenState extends State<SheetListScreen> {
               }
             },
           ),
+          const Divider(),
+          if (selectedSheet_ != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('🆕 年別データ追加'),
+                  TextField(
+                    controller: yearController_,
+                    decoration: const InputDecoration(labelText: '年'),
+                  ),
+                  TextField(
+                    controller: memoController_,
+                    decoration: const InputDecoration(labelText: 'メモ'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _submitYearlyData,
+                    child: const Text('追加する'),
+                  ),
+                ],
+              ),
+            ),
           const Divider(),
           if (sheetData_ != null)
             Expanded(
@@ -79,13 +121,18 @@ class _SheetListScreenState extends State<SheetListScreen> {
                       final row = sheetData_!['yearlyData'][i + 1]['data'];
                       return ListTile(
                         title: Text('${row[0]}年'),
-                        subtitle: Text(List.generate(headers.length, (j) => '${headers[j]}: ${row[j]}').join('\n')),
+                        subtitle: Text(
+                          List.generate(
+                            headers.length,
+                            (j) => '${headers[j]}: ${row[j]}',
+                          ).join('\n'),
+                        ),
                       );
                     },
                   )
                 ],
               ),
-            )
+            ),
         ],
       ),
     );
