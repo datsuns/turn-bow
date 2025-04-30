@@ -1,11 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'services/sheet_service.dart';
 
 void main() {
-  runApp(const MaterialApp(
-    home: SheetListScreen(),
-  ));
+  runApp(const MaterialApp(home: SheetListScreen()));
 }
 
 class SheetListScreen extends StatefulWidget {
@@ -68,9 +65,10 @@ class _SheetListScreenState extends State<SheetListScreen> {
           DropdownButton<String>(
             hint: const Text('シートを選択'),
             value: selectedSheet_,
-            items: sheetNames_.map((name) {
-              return DropdownMenuItem(value: name, child: Text(name));
-            }).toList(),
+            items:
+                sheetNames_.map((name) {
+                  return DropdownMenuItem(value: name, child: Text(name));
+                }).toList(),
             onChanged: (value) {
               if (value != null) {
                 _loadSheetData(value);
@@ -105,31 +103,73 @@ class _SheetListScreenState extends State<SheetListScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  const Text('🔒 固定値'),
-                  ...sheetData_!['fixedValues'].entries.map(
-                    (e) => ListTile(
-                      title: Text(e.key),
-                      subtitle: Text(e.value.toString()),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      '🔒 固定値',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columns: const [
+                        DataColumn(label: Text('項目')),
+                        DataColumn(label: Text('値')),
+                      ],
+                      rows:
+                          sheetData_!['fixedValues'].entries.map<DataRow>((e) {
+                            return DataRow(
+                              cells: [
+                                DataCell(Text(e.key)),
+                                DataCell(Text(e.value.toString())),
+                              ],
+                            );
+                          }).toList(),
                     ),
                   ),
                   const Divider(),
-                  const Text('📅 年別データ'),
-                  ...List.generate(
-                    sheetData_!['yearlyData'].length - 1,
-                    (i) {
-                      final headers = sheetData_!['yearlyData'][0]['header'];
-                      final row = sheetData_!['yearlyData'][i + 1]['data'];
-                      return ListTile(
-                        title: Text('${row[0]}年'),
-                        subtitle: Text(
-                          List.generate(
-                            headers.length,
-                            (j) => '${headers[j]}: ${row[j]}',
-                          ).join('\n'),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      '📅 年別データ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  if (sheetData_!['yearlyData'].length > 1)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columns:
+                            (sheetData_!['yearlyData'][0]['header'] as List)
+                                .map<DataColumn>(
+                                  (col) =>
+                                      DataColumn(label: Text(col.toString())),
+                                )
+                                .toList(),
+                        rows: List<DataRow>.generate(
+                          sheetData_!['yearlyData'].length - 1,
+                          (i) {
+                            final headers =
+                                sheetData_!['yearlyData'][0]['header'] as List;
+                            final row =
+                                sheetData_!['yearlyData'][i + 1]['data']
+                                    as List;
+                            return DataRow(
+                              cells: List.generate(headers.length, (j) {
+                                final cell = j < row.length ? row[j] : '';
+                                return DataCell(Text(cell.toString()));
+                              }),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  )
+                      ),
+                    )
+                  else
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('年別データがまだありません'),
+                    ),
                 ],
               ),
             ),
