@@ -56,63 +56,103 @@ class _SheetListScreenState extends State<SheetListScreen> {
     memoController_.clear();
   }
 
+  void _showYearlyDataDialog() {
+    final yearController = TextEditingController();
+    final memoController = TextEditingController();
 
-void _showYearlyDataDialog() {
-  final yearController = TextEditingController();
-  final memoController = TextEditingController();
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('年別データを追加'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: yearController,
-              decoration: const InputDecoration(labelText: '年'),
-              keyboardType: TextInputType.number,
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('年別データを追加'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: yearController,
+                decoration: const InputDecoration(labelText: '年'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: memoController,
+                decoration: const InputDecoration(labelText: 'メモ'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
             ),
-            TextField(
-              controller: memoController,
-              decoration: const InputDecoration(labelText: 'メモ'),
+            ElevatedButton(
+              onPressed: () async {
+                final year = yearController.text.trim();
+                final memo = memoController.text.trim();
+                if (year.isEmpty) return;
+
+                final data = {'年': year, 'メモ': memo};
+
+                try {
+                  await SheetService.postYearlyData(selectedSheet_!, data);
+                  Navigator.of(context).pop();
+                  _loadSheetData(selectedSheet_!);
+                } catch (e) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('追加に失敗: $e')));
+                }
+              },
+              child: const Text('追加する'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final year = yearController.text.trim();
-              final memo = memoController.text.trim();
-              if (year.isEmpty) return;
+        );
+      },
+    );
+  }
 
-              final data = {
-                '年': year,
-                'メモ': memo,
-              };
+  void _showFixedValueEditDialog(String key, String currentValue) {
+    final controller = TextEditingController(text: currentValue);
 
-              try {
-                await SheetService.postYearlyData(selectedSheet_!, data);
-                Navigator.of(context).pop();
-                _loadSheetData(selectedSheet_!);
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('追加に失敗: $e')),
-                );
-              }
-            },
-            child: const Text('追加する'),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('「$key」の値を修正'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: '新しい値'),
           ),
-        ],
-      );
-    },
-  );
-}
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newValue = controller.text.trim();
+                if (newValue.isEmpty) return;
+
+                try {
+                  await SheetService.updateFixedValue(
+                    selectedSheet_!,
+                    key,
+                    newValue,
+                  );
+                  Navigator.of(context).pop();
+                  _loadSheetData(selectedSheet_!);
+                } catch (e) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('修正に失敗: $e')));
+                }
+              },
+              child: const Text('修正する'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,16 +193,28 @@ void _showYearlyDataDialog() {
                         DataColumn(label: Text('値')),
                       ],
                       rows:
-                          sheetData_!['fixedValues'].entries
-                              .map<DataRow>(
-                                (e) => DataRow(
-                                  cells: [
-                                    DataCell(Text(e.key)),
-                                    DataCell(Text(e.value.toString())),
-                                  ],
+                          sheetData_!['fixedValues'].entries.map<DataRow>((e) {
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  Text(e.key),
+                                  onLongPress:
+                                      () => _showFixedValueEditDialog(
+                                        e.key,
+                                        e.value.toString(),
+                                      ),
                                 ),
-                              )
-                              .toList(),
+                                DataCell(
+                                  Text(e.value.toString()),
+                                  onLongPress:
+                                      () => _showFixedValueEditDialog(
+                                        e.key,
+                                        e.value.toString(),
+                                      ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
                     ),
                   ),
                   const Divider(),

@@ -47,4 +47,24 @@ class SheetService {
       throw Exception('データの追加に失敗しました: ${response.body}');
     }
   }
+
+  static Future<void> updateFixedValue(
+    String sheetName,
+    String key,
+    String value,
+  ) async {
+    final url = Uri.parse('$baseUrl?action=updateFixed&sheetName=$sheetName');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'key': key, 'value': value}),
+    );
+
+    // GASがリダイレクトしようとしてくる。が、データは追加できてる
+    // 302がどうにも回避できないのでいったん許容して進めることとする
+    //if (response.statusCode != 200 || response.body.trim() != '修正完了') {
+    if (response.statusCode != 200 && response.statusCode != 302) {
+      throw Exception('修正に失敗しました: ${response.body}');
+    }
+  }
 }
