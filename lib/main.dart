@@ -154,6 +154,63 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
+  void _showEditYearlyDialog(Map<String, dynamic> rowData) {
+    final controllers = <String, TextEditingController>{};
+    for (final entry in rowData.entries) {
+      controllers[entry.key] = TextEditingController(
+        text: entry.value.toString(),
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('年別データの編集'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  controllers.entries.map((entry) {
+                    return TextField(
+                      controller: entry.value,
+                      decoration: InputDecoration(labelText: entry.key),
+                    );
+                  }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final updatedData = {
+                  for (final entry in controllers.entries)
+                    entry.key: entry.value.text.trim(),
+                };
+                try {
+                  await SheetService.updateYearlyData(
+                    selectedSheet_!,
+                    updatedData,
+                  );
+                  Navigator.of(context).pop();
+                  _loadSheetData(selectedSheet_!);
+                } catch (e) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('更新失敗: $e')));
+                }
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -254,7 +311,14 @@ class _SheetListScreenState extends State<SheetListScreen> {
                             final row =
                                 sheetData_!['yearlyData'][i + 1]['data']
                                     as List;
+                            // Map<String, dynamic> を構築して編集に渡す
+                            final rowData = <String, dynamic>{};
+                            for (int j = 0; j < headers.length; j++) {
+                              rowData[headers[j].toString()] =
+                                  j < row.length ? row[j] : '';
+                            }
                             return DataRow(
+                              onLongPress: () => _showEditYearlyDialog(rowData),
                               cells: List.generate(headers.length, (j) {
                                 final cell = j < row.length ? row[j] : '';
                                 return DataCell(Text(cell.toString()));

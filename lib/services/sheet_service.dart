@@ -67,4 +67,23 @@ class SheetService {
       throw Exception('修正に失敗しました: ${response.body}');
     }
   }
+
+  static Future<void> updateYearlyData(
+    String sheetName,
+    Map<String, dynamic> data,
+  ) async {
+    final url = Uri.parse('$baseUrl?action=updateYearly&sheetName=$sheetName');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(data),
+    );
+
+    // GASがリダイレクトしようとしてくる。が、データは追加できてる
+    // 302がどうにも回避できないのでいったん許容して進めることとする
+    //if (response.statusCode != 200 || response.body.trim() != '更新完了') {
+    if (response.statusCode != 200 && response.statusCode != 302) {
+      throw Exception('更新に失敗しました: ${response.body}');
+    }
+  }
 }
