@@ -15,9 +15,7 @@ class SheetService {
   }
 
   static Future<Map<String, dynamic>> fetchSheetData(String sheetName) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl?action=get&sheetName=$sheetName'),
-    );
+    final response = await http.get(Uri.parse('$baseUrl?action=get&sheetName=$sheetName'));
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
@@ -25,10 +23,7 @@ class SheetService {
     }
   }
 
-  static Future<void> postYearlyData(
-    String sheetName,
-    Map<String, dynamic> data,
-  ) async {
+  static Future<void> postYearlyData(String sheetName, Map<String, dynamic> data) async {
     final url = Uri.parse('$baseUrl?action=add&sheetName=$sheetName');
 
     final client = http.Client();
@@ -48,11 +43,7 @@ class SheetService {
     }
   }
 
-  static Future<void> updateFixedValue(
-    String sheetName,
-    String key,
-    String value,
-  ) async {
+  static Future<void> updateFixedValue(String sheetName, String key, String value) async {
     final url = Uri.parse('$baseUrl?action=updateFixed&sheetName=$sheetName');
     final response = await http.post(
       url,
@@ -68,16 +59,9 @@ class SheetService {
     }
   }
 
-  static Future<void> updateYearlyData(
-    String sheetName,
-    Map<String, dynamic> data,
-  ) async {
+  static Future<void> updateYearlyData(String sheetName, Map<String, dynamic> data) async {
     final url = Uri.parse('$baseUrl?action=updateYearly&sheetName=$sheetName');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(data),
-    );
+    final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode(data));
 
     // GASがリダイレクトしようとしてくる。が、データは追加できてる
     // 302がどうにも回避できないのでいったん許容して進めることとする
