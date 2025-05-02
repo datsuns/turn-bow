@@ -73,11 +73,17 @@ class _SheetListScreenState extends State<SheetListScreen> {
                 decoration: const InputDecoration(labelText: '年'),
                 keyboardType: TextInputType.number,
               ),
-              TextField(controller: memoController, decoration: const InputDecoration(labelText: 'メモ')),
+              TextField(
+                controller: memoController,
+                decoration: const InputDecoration(labelText: 'メモ'),
+              ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 final year = yearController.text.trim();
@@ -88,10 +94,13 @@ class _SheetListScreenState extends State<SheetListScreen> {
 
                 try {
                   await SheetService.postYearlyData(selectedSheet_!, data);
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                   _loadSheetData(selectedSheet_!);
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('追加に失敗: $e')));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('追加に失敗: $e')));
                 }
               },
               child: const Text('追加する'),
@@ -110,20 +119,33 @@ class _SheetListScreenState extends State<SheetListScreen> {
       builder: (context) {
         return AlertDialog(
           title: Text('「$key」の値を修正'),
-          content: TextField(controller: controller, decoration: const InputDecoration(labelText: '新しい値')),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: '新しい値'),
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 final newValue = controller.text.trim();
                 if (newValue.isEmpty) return;
 
                 try {
-                  await SheetService.updateFixedValue(selectedSheet_!, key, newValue);
+                  await SheetService.updateFixedValue(
+                    selectedSheet_!,
+                    key,
+                    newValue,
+                  );
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                   _loadSheetData(selectedSheet_!);
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('修正に失敗: $e')));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('修正に失敗: $e')));
                 }
               },
               child: const Text('修正する'),
@@ -137,7 +159,9 @@ class _SheetListScreenState extends State<SheetListScreen> {
   void _showEditYearlyDialog(Map<String, dynamic> rowData) {
     final controllers = <String, TextEditingController>{};
     for (final entry in rowData.entries) {
-      controllers[entry.key] = TextEditingController(text: entry.value.toString());
+      controllers[entry.key] = TextEditingController(
+        text: entry.value.toString(),
+      );
     }
 
     showDialog(
@@ -150,21 +174,36 @@ class _SheetListScreenState extends State<SheetListScreen> {
               mainAxisSize: MainAxisSize.min,
               children:
                   controllers.entries.map((entry) {
-                    return TextField(controller: entry.value, decoration: InputDecoration(labelText: entry.key));
+                    return TextField(
+                      controller: entry.value,
+                      decoration: InputDecoration(labelText: entry.key),
+                    );
                   }).toList(),
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
+            ),
             ElevatedButton(
               onPressed: () async {
-                final updatedData = {for (final entry in controllers.entries) entry.key: entry.value.text.trim()};
+                final updatedData = {
+                  for (final entry in controllers.entries)
+                    entry.key: entry.value.text.trim(),
+                };
                 try {
-                  await SheetService.updateYearlyData(selectedSheet_!, updatedData);
+                  await SheetService.updateYearlyData(
+                    selectedSheet_!,
+                    updatedData,
+                  );
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                   _loadSheetData(selectedSheet_!);
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('更新失敗: $e')));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('更新失敗: $e')));
                 }
               },
               child: const Text('保存'),
@@ -189,7 +228,10 @@ class _SheetListScreenState extends State<SheetListScreen> {
               keyboardType: TextInputType.number,
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('キャンセル'),
+              ),
               ElevatedButton(
                 onPressed: () async {
                   final year = yearController.text.trim();
@@ -197,11 +239,14 @@ class _SheetListScreenState extends State<SheetListScreen> {
 
                   try {
                     await SheetService.deleteYearlyData(selectedSheet_!, year);
+                    if (!context.mounted) return;
                     Navigator.of(context).pop();
                     _loadSheetData(selectedSheet_!);
                   } catch (e) {
                     Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('削除失敗: $e')));
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('削除失敗: $e')));
                   }
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -238,23 +283,37 @@ class _SheetListScreenState extends State<SheetListScreen> {
                 children: [
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('🔒 固定値', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      '🔒 固定値',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
-                      columns: const [DataColumn(label: Text('項目')), DataColumn(label: Text('値'))],
+                      columns: const [
+                        DataColumn(label: Text('項目')),
+                        DataColumn(label: Text('値')),
+                      ],
                       rows:
                           sheetData_!['fixedValues'].entries.map<DataRow>((e) {
                             return DataRow(
                               cells: [
                                 DataCell(
                                   Text(e.key),
-                                  onLongPress: () => _showFixedValueEditDialog(e.key, e.value.toString()),
+                                  onLongPress:
+                                      () => _showFixedValueEditDialog(
+                                        e.key,
+                                        e.value.toString(),
+                                      ),
                                 ),
                                 DataCell(
                                   Text(e.value.toString()),
-                                  onLongPress: () => _showFixedValueEditDialog(e.key, e.value.toString()),
+                                  onLongPress:
+                                      () => _showFixedValueEditDialog(
+                                        e.key,
+                                        e.value.toString(),
+                                      ),
                                 ),
                               ],
                             );
@@ -267,15 +326,23 @@ class _SheetListScreenState extends State<SheetListScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('年別データ', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          '年別データ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(width: 16),
-                        ElevatedButton(onPressed: _showYearlyDataDialog, child: const Text('追加')),
+                        ElevatedButton(
+                          onPressed: _showYearlyDataDialog,
+                          child: const Text('追加'),
+                        ),
                         const SizedBox(width: 8),
                         ElevatedButton.icon(
                           onPressed: _showDeleteYearDialog,
                           icon: const Icon(Icons.delete),
                           label: const Text('削除'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                         ),
                       ],
                     ),
@@ -286,28 +353,41 @@ class _SheetListScreenState extends State<SheetListScreen> {
                       child: DataTable(
                         columns:
                             (sheetData_!['yearlyData'][0]['header'] as List)
-                                .map<DataColumn>((col) => DataColumn(label: Text(col.toString())))
+                                .map<DataColumn>(
+                                  (col) =>
+                                      DataColumn(label: Text(col.toString())),
+                                )
                                 .toList(),
-                        rows: List<DataRow>.generate(sheetData_!['yearlyData'].length - 1, (i) {
-                          final headers = sheetData_!['yearlyData'][0]['header'] as List;
-                          final row = sheetData_!['yearlyData'][i + 1]['data'] as List;
-                          // Map<String, dynamic> を構築して編集に渡す
-                          final rowData = <String, dynamic>{};
-                          for (int j = 0; j < headers.length; j++) {
-                            rowData[headers[j].toString()] = j < row.length ? row[j] : '';
-                          }
-                          return DataRow(
-                            onLongPress: () => _showEditYearlyDialog(rowData),
-                            cells: List.generate(headers.length, (j) {
-                              final cell = j < row.length ? row[j] : '';
-                              return DataCell(Text(cell.toString()));
-                            }),
-                          );
-                        }),
+                        rows: List<DataRow>.generate(
+                          sheetData_!['yearlyData'].length - 1,
+                          (i) {
+                            final headers =
+                                sheetData_!['yearlyData'][0]['header'] as List;
+                            final row =
+                                sheetData_!['yearlyData'][i + 1]['data']
+                                    as List;
+                            // Map<String, dynamic> を構築して編集に渡す
+                            final rowData = <String, dynamic>{};
+                            for (int j = 0; j < headers.length; j++) {
+                              rowData[headers[j].toString()] =
+                                  j < row.length ? row[j] : '';
+                            }
+                            return DataRow(
+                              onLongPress: () => _showEditYearlyDialog(rowData),
+                              cells: List.generate(headers.length, (j) {
+                                final cell = j < row.length ? row[j] : '';
+                                return DataCell(Text(cell.toString()));
+                              }),
+                            );
+                          },
+                        ),
                       ),
                     )
                   else
-                    const Padding(padding: EdgeInsets.all(8.0), child: Text('年別データがまだありません')),
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('年別データがまだありません'),
+                    ),
                 ],
               ),
             ),
