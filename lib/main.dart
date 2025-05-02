@@ -19,8 +19,6 @@ class _SheetListScreenState extends State<SheetListScreen> {
   List<String> sheetNames_ = [];
   String? selectedSheet_;
   SheetData? sheetData_;
-  TextEditingController yearController_ = TextEditingController();
-  TextEditingController memoController_ = TextEditingController();
   ButtonStyle acceptButtonStyle_ = ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent);
   ButtonStyle dangerButtonStyle_ = ElevatedButton.styleFrom(backgroundColor: Colors.amberAccent);
   Color colorRiceField_ = Colors.greenAccent;
@@ -47,7 +45,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
     });
   }
 
-  void _showYearlyDataDialog() {
+  void _showYearlyDataDialog(String? sheetName) {
     final yearController = TextEditingController();
     final memoController = TextEditingController();
 
@@ -78,10 +76,10 @@ class _SheetListScreenState extends State<SheetListScreen> {
                 final data = {'年': year, 'メモ': memo};
 
                 try {
-                  await SheetService.postYearlyData(selectedSheet_!, data);
+                  await SheetService.postYearlyData(sheetName!, data);
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
-                  _loadSheetData(selectedSheet_!);
+                  _loadSheetData(sheetName!);
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('追加に失敗: $e')));
                 }
@@ -95,7 +93,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
-  void _showFixedValueEditDialog(String key, String currentValue) {
+  void _showFixedValueEditDialog(String? sheetName, String key, String currentValue) {
     final controller = TextEditingController(text: currentValue);
 
     showDialog(
@@ -112,10 +110,10 @@ class _SheetListScreenState extends State<SheetListScreen> {
                 if (newValue.isEmpty) return;
 
                 try {
-                  await SheetService.updateFixedValue(selectedSheet_!, {key: newValue});
+                  await SheetService.updateFixedValue(sheetName!, {key: newValue});
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
-                  _loadSheetData(selectedSheet_!);
+                  _loadSheetData(sheetName!);
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('修正に失敗: $e')));
                 }
@@ -129,7 +127,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
-  void _showEditYearlyDialog(Map<String, dynamic> rowData) {
+  void _showEditYearlyDialog(String? sheetName, Map<String, dynamic> rowData) {
     final controllers = <String, TextEditingController>{};
     for (final entry in rowData.entries) {
       controllers[entry.key] = TextEditingController(text: entry.value.toString());
@@ -155,10 +153,10 @@ class _SheetListScreenState extends State<SheetListScreen> {
               onPressed: () async {
                 final updatedData = {for (final entry in controllers.entries) entry.key: entry.value.text.trim()};
                 try {
-                  await SheetService.updateYearlyData(selectedSheet_!, updatedData);
+                  await SheetService.updateYearlyData(sheetName!, updatedData);
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
-                  _loadSheetData(selectedSheet_!);
+                  _loadSheetData(sheetName!);
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('更新失敗: $e')));
                 }
@@ -333,7 +331,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
-  Widget _buildFixedValuesTable(SheetData? sheets) {
+  Widget _buildFixedValuesTable(String? sheetName, SheetData? sheets) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -349,8 +347,8 @@ class _SheetListScreenState extends State<SheetListScreen> {
                 sheets!.fixedValues.entries.map<DataRow>((e) {
                   return DataRow(
                     cells: [
-                      DataCell(Text(e.key), onLongPress: () => _showFixedValueEditDialog(e.key, e.value)),
-                      DataCell(Text(e.value), onLongPress: () => _showFixedValueEditDialog(e.key, e.value)),
+                      DataCell(Text(e.key), onLongPress: () => _showFixedValueEditDialog(sheetName, e.key, e.value)),
+                      DataCell(Text(e.value), onLongPress: () => _showFixedValueEditDialog(sheetName, e.key, e.value)),
                     ],
                   );
                 }).toList(),
@@ -360,7 +358,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
-  Widget _buildYearlyDataControls() {
+  Widget _buildYearlyDataControls(String? sheetName, SheetData? data) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -370,7 +368,9 @@ class _SheetListScreenState extends State<SheetListScreen> {
           Row(
             children: [
               ElevatedButton.icon(
-                onPressed: _showYearlyDataDialog,
+                onPressed: () {
+                  _showYearlyDataDialog(sheetName);
+                },
                 icon: const Icon(Icons.add),
                 label: const Text('追加'),
                 style: acceptButtonStyle_,
@@ -378,7 +378,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
               const SizedBox(width: 8),
               ElevatedButton.icon(
                 onPressed: () {
-                  _showDeleteYearDialog(selectedSheet_, sheetData_);
+                  _showDeleteYearDialog(sheetName, data);
                 },
                 icon: const Icon(Icons.delete),
                 label: const Text('削除'),
@@ -391,8 +391,8 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
-  Widget _buildYearlyDataTable(SheetData? sheets) {
-    if (sheetData_!.yearlyRows.isEmpty) {
+  Widget _buildYearlyDataTable(String? sheetName, SheetData? sheets) {
+    if (sheets!.yearlyRows.isEmpty) {
       return const Padding(padding: EdgeInsets.all(8.0), child: Text('年別データがまだありません'));
     }
 
@@ -403,7 +403,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
         rows:
             sheets.yearlyRows.map((row) {
               return DataRow(
-                onLongPress: () => _showEditYearlyDialog(row),
+                onLongPress: () => _showEditYearlyDialog(sheetName, row),
                 cells:
                     sheets.yearlyHeaders.map((h) {
                       return DataCell(Text(row[h] ?? ''));
@@ -426,10 +426,10 @@ class _SheetListScreenState extends State<SheetListScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  _buildFixedValuesTable(sheetData_),
+                  _buildFixedValuesTable(selectedSheet_, sheetData_),
                   const Divider(),
-                  _buildYearlyDataControls(),
-                  _buildYearlyDataTable(sheetData_),
+                  _buildYearlyDataControls(selectedSheet_, sheetData_),
+                  _buildYearlyDataTable(selectedSheet_, sheetData_),
                 ],
               ),
             ),
