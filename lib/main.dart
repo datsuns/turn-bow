@@ -19,6 +19,12 @@ class _SheetListScreenState extends State<SheetListScreen> {
   SheetData? sheetData_;
   TextEditingController yearController_ = TextEditingController();
   TextEditingController memoController_ = TextEditingController();
+  ButtonStyle acceptButtonStyle_ = ElevatedButton.styleFrom(
+    backgroundColor: Colors.greenAccent,
+  );
+  ButtonStyle dangerButtonStyle_ = ElevatedButton.styleFrom(
+    backgroundColor: Colors.amberAccent,
+  );
 
   @override
   void initState() {
@@ -88,6 +94,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
                   ).showSnackBar(SnackBar(content: Text('追加に失敗: $e')));
                 }
               },
+              style: acceptButtonStyle_,
               child: const Text('追加する'),
             ),
           ],
@@ -131,6 +138,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
                   ).showSnackBar(SnackBar(content: Text('修正に失敗: $e')));
                 }
               },
+              style: acceptButtonStyle_,
               child: const Text('修正する'),
             ),
           ],
@@ -189,6 +197,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
                   ).showSnackBar(SnackBar(content: Text('更新失敗: $e')));
                 }
               },
+              style: acceptButtonStyle_,
               child: const Text('保存'),
             ),
           ],
@@ -232,7 +241,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
                     ).showSnackBar(SnackBar(content: Text('削除失敗: $e')));
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                style: dangerButtonStyle_,
                 child: const Text('削除'),
               ),
             ],
@@ -314,18 +323,18 @@ class _SheetListScreenState extends State<SheetListScreen> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(width: 16),
-                        ElevatedButton(
+                        ElevatedButton.icon(
                           onPressed: _showYearlyDataDialog,
-                          child: const Text('追加'),
+                          icon: const Icon(Icons.add_circle),
+                          label: const Text('追加'),
+                          style: acceptButtonStyle_,
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton.icon(
                           onPressed: _showDeleteYearDialog,
                           icon: const Icon(Icons.delete),
                           label: const Text('削除'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
+                          style: dangerButtonStyle_,
                         ),
                       ],
                     ),
