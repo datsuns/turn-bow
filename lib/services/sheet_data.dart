@@ -1,3 +1,5 @@
+import 'sheet_type.dart';
+
 class SheetData {
   final Map<String, String> fixedValues;
   final List<String> yearlyHeaders;
@@ -18,5 +20,15 @@ class SheetData {
         }).toList();
 
     return SheetData(fixedValues: fixed, yearlyHeaders: headers, yearlyRows: rows);
+  }
+
+  static SheetType sheetNameToType(String sheetName) {
+    if (sheetName.startsWith('田んぼ_')) {
+      return SheetType.ricefield;
+    } else if (sheetName.startsWith('機材_')) {
+      return SheetType.eqpupment;
+    } else {
+      return SheetType.unknown;
+    }
   }
 }

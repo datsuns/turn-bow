@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/sheet_service.dart';
 import 'services/sheet_data.dart';
+import 'services/sheet_type.dart';
 
 void main() {
   runApp(const MaterialApp(home: SheetListScreen()));
@@ -209,12 +210,13 @@ class _SheetListScreenState extends State<SheetListScreen> {
   }
 
   Color decideDropDownColor(String name) {
-    if (name.startsWith('田んぼ_')) {
-      return colorRiceField_;
-    } else if (name.startsWith('機材_')) {
-      return colorEquipment_;
-    } else {
-      return Colors.transparent;
+    switch (SheetData.sheetNameToType(name)) {
+      case SheetType.ricefield:
+        return colorRiceField_;
+      case SheetType.eqpupment:
+        return colorEquipment_;
+      default:
+        return Colors.transparent;
     }
   }
 
