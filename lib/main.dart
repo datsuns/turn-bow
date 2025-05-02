@@ -218,12 +218,12 @@ class _SheetListScreenState extends State<SheetListScreen> {
     }
   }
 
-  Widget _buildDropdown() {
+  Widget _buildDropdown(String? sheetName, List<String> sheetNameList) {
     return DropdownButton<String>(
       hint: const Text('シートを選択'),
-      value: selectedSheet_,
+      value: sheetName,
       items:
-          sheetNames_.map((name) {
+          sheetNameList.map((name) {
             return DropdownMenuItem(value: name, child: Container(color: decideDropDownColor(name), child: Text(name)));
           }).toList(),
       onChanged: (value) {
@@ -232,7 +232,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
-  Widget _buildFixedValuesTable() {
+  Widget _buildFixedValuesTable(SheetData? sheets) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -245,7 +245,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
           child: DataTable(
             columns: const [DataColumn(label: Text('項目')), DataColumn(label: Text('値'))],
             rows:
-                sheetData_!.fixedValues.entries.map<DataRow>((e) {
+                sheets!.fixedValues.entries.map<DataRow>((e) {
                   return DataRow(
                     cells: [
                       DataCell(Text(e.key), onLongPress: () => _showFixedValueEditDialog(e.key, e.value)),
@@ -288,26 +288,25 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
-  Widget _buildYearlyDataTable() {
+  Widget _buildYearlyDataTable(SheetData? sheets) {
     if (sheetData_!.yearlyRows.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Text('年別データがまだありません'),
-      );
+      return const Padding(padding: EdgeInsets.all(8.0), child: Text('年別データがまだありません'));
     }
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
-        columns: sheetData_!.yearlyHeaders.map((h) => DataColumn(label: Text(h))).toList(),
-        rows: sheetData_!.yearlyRows.map((row) {
-          return DataRow(
-            onLongPress: () => _showEditYearlyDialog(row),
-            cells: sheetData_!.yearlyHeaders.map((h) {
-              return DataCell(Text(row[h] ?? ''));
+        columns: sheets!.yearlyHeaders.map((h) => DataColumn(label: Text(h))).toList(),
+        rows:
+            sheets.yearlyRows.map((row) {
+              return DataRow(
+                onLongPress: () => _showEditYearlyDialog(row),
+                cells:
+                    sheets.yearlyHeaders.map((h) {
+                      return DataCell(Text(row[h] ?? ''));
+                    }).toList(),
+              );
             }).toList(),
-          );
-        }).toList(),
       ),
     );
   }
@@ -318,16 +317,16 @@ class _SheetListScreenState extends State<SheetListScreen> {
       appBar: AppBar(title: const Text('田んぼ・機材リスト')),
       body: Column(
         children: [
-          _buildDropdown(),
+          _buildDropdown(selectedSheet_, sheetNames_),
           const Divider(),
           if (sheetData_ != null)
             Expanded(
               child: ListView(
                 children: [
-                  _buildFixedValuesTable(),
+                  _buildFixedValuesTable(sheetData_),
                   const Divider(),
                   _buildYearlyDataControls(),
-                  _buildYearlyDataTable(),
+                  _buildYearlyDataTable(sheetData_),
                 ],
               ),
             ),
