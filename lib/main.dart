@@ -19,12 +19,8 @@ class _SheetListScreenState extends State<SheetListScreen> {
   SheetData? sheetData_;
   TextEditingController yearController_ = TextEditingController();
   TextEditingController memoController_ = TextEditingController();
-  ButtonStyle acceptButtonStyle_ = ElevatedButton.styleFrom(
-    backgroundColor: Colors.greenAccent,
-  );
-  ButtonStyle dangerButtonStyle_ = ElevatedButton.styleFrom(
-    backgroundColor: Colors.amberAccent,
-  );
+  ButtonStyle acceptButtonStyle_ = ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent);
+  ButtonStyle dangerButtonStyle_ = ElevatedButton.styleFrom(backgroundColor: Colors.amberAccent);
   Color colorRiceField_ = Colors.greenAccent;
   Color colorEquipment_ = Colors.transparent;
 
@@ -66,17 +62,11 @@ class _SheetListScreenState extends State<SheetListScreen> {
                 decoration: const InputDecoration(labelText: '年'),
                 keyboardType: TextInputType.number,
               ),
-              TextField(
-                controller: memoController,
-                decoration: const InputDecoration(labelText: 'メモ'),
-              ),
+              TextField(controller: memoController, decoration: const InputDecoration(labelText: 'メモ')),
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('キャンセル'),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
             ElevatedButton(
               onPressed: () async {
                 final year = yearController.text.trim();
@@ -91,9 +81,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
                   Navigator.of(context).pop();
                   _loadSheetData(selectedSheet_!);
                 } catch (e) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('追加に失敗: $e')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('追加に失敗: $e')));
                 }
               },
               style: acceptButtonStyle_,
@@ -113,31 +101,21 @@ class _SheetListScreenState extends State<SheetListScreen> {
       builder: (context) {
         return AlertDialog(
           title: Text('「$key」の値を修正'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(labelText: '新しい値'),
-          ),
+          content: TextField(controller: controller, decoration: const InputDecoration(labelText: '新しい値')),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('キャンセル'),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
             ElevatedButton(
               onPressed: () async {
                 final newValue = controller.text.trim();
                 if (newValue.isEmpty) return;
 
                 try {
-                  await SheetService.updateFixedValue(selectedSheet_!, {
-                    key: newValue,
-                  });
+                  await SheetService.updateFixedValue(selectedSheet_!, {key: newValue});
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
                   _loadSheetData(selectedSheet_!);
                 } catch (e) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('修正に失敗: $e')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('修正に失敗: $e')));
                 }
               },
               style: acceptButtonStyle_,
@@ -152,9 +130,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
   void _showEditYearlyDialog(Map<String, dynamic> rowData) {
     final controllers = <String, TextEditingController>{};
     for (final entry in rowData.entries) {
-      controllers[entry.key] = TextEditingController(
-        text: entry.value.toString(),
-      );
+      controllers[entry.key] = TextEditingController(text: entry.value.toString());
     }
 
     showDialog(
@@ -167,36 +143,22 @@ class _SheetListScreenState extends State<SheetListScreen> {
               mainAxisSize: MainAxisSize.min,
               children:
                   controllers.entries.map((entry) {
-                    return TextField(
-                      controller: entry.value,
-                      decoration: InputDecoration(labelText: entry.key),
-                    );
+                    return TextField(controller: entry.value, decoration: InputDecoration(labelText: entry.key));
                   }).toList(),
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('キャンセル'),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
             ElevatedButton(
               onPressed: () async {
-                final updatedData = {
-                  for (final entry in controllers.entries)
-                    entry.key: entry.value.text.trim(),
-                };
+                final updatedData = {for (final entry in controllers.entries) entry.key: entry.value.text.trim()};
                 try {
-                  await SheetService.updateYearlyData(
-                    selectedSheet_!,
-                    updatedData,
-                  );
+                  await SheetService.updateYearlyData(selectedSheet_!, updatedData);
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
                   _loadSheetData(selectedSheet_!);
                 } catch (e) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('更新失敗: $e')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('更新失敗: $e')));
                 }
               },
               style: acceptButtonStyle_,
@@ -222,10 +184,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
               keyboardType: TextInputType.number,
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('キャンセル'),
-              ),
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
               ElevatedButton(
                 onPressed: () async {
                   final year = yearController.text.trim();
@@ -238,9 +197,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
                     _loadSheetData(selectedSheet_!);
                   } catch (e) {
                     Navigator.of(context).pop();
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('削除失敗: $e')));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('削除失敗: $e')));
                   }
                 },
                 style: dangerButtonStyle_,
@@ -261,130 +218,116 @@ class _SheetListScreenState extends State<SheetListScreen> {
     }
   }
 
+  Widget _buildDropdown() {
+    return DropdownButton<String>(
+      hint: const Text('シートを選択'),
+      value: selectedSheet_,
+      items:
+          sheetNames_.map((name) {
+            return DropdownMenuItem(value: name, child: Container(color: decideDropDownColor(name), child: Text(name)));
+          }).toList(),
+      onChanged: (value) {
+        if (value != null) _loadSheetData(value);
+      },
+    );
+  }
+
+  Widget _buildFixedValuesTable() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          child: Text('🔒 固定値', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            columns: const [DataColumn(label: Text('項目')), DataColumn(label: Text('値'))],
+            rows:
+                sheetData_!.fixedValues.entries.map<DataRow>((e) {
+                  return DataRow(
+                    cells: [
+                      DataCell(Text(e.key), onLongPress: () => _showFixedValueEditDialog(e.key, e.value)),
+                      DataCell(Text(e.value), onLongPress: () => _showFixedValueEditDialog(e.key, e.value)),
+                    ],
+                  );
+                }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildYearlyDataControls() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('年別データ', style: TextStyle(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: _showYearlyDataDialog,
+                icon: const Icon(Icons.add_circle),
+                label: const Text('追加'),
+                style: acceptButtonStyle_,
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: _showDeleteYearDialog,
+                icon: const Icon(Icons.delete),
+                label: const Text('削除'),
+                style: dangerButtonStyle_,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildYearlyDataTable() {
+    if (sheetData_!.yearlyRows.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text('年別データがまだありません'),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: DataTable(
+        columns: sheetData_!.yearlyHeaders.map((h) => DataColumn(label: Text(h))).toList(),
+        rows: sheetData_!.yearlyRows.map((row) {
+          return DataRow(
+            onLongPress: () => _showEditYearlyDialog(row),
+            cells: sheetData_!.yearlyHeaders.map((h) {
+              return DataCell(Text(row[h] ?? ''));
+            }).toList(),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('田んぼ・機材リスト')),
       body: Column(
         children: [
-          DropdownButton<String>(
-            hint: const Text('シートを選択'),
-            value: selectedSheet_,
-            items:
-                sheetNames_.map((name) {
-                  return DropdownMenuItem(
-                    value: name,
-                    child: Container(
-                      color: decideDropDownColor(name),
-                      child: Text(name),
-                    ),
-                  );
-                }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                _loadSheetData(value);
-              }
-            },
-          ),
+          _buildDropdown(),
           const Divider(),
           if (sheetData_ != null)
             Expanded(
               child: ListView(
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      '🔒 固定値',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('項目')),
-                        DataColumn(label: Text('値')),
-                      ],
-                      rows:
-                          sheetData_!.fixedValues.entries.map<DataRow>((e) {
-                            return DataRow(
-                              cells: [
-                                DataCell(
-                                  Text(e.key),
-                                  onLongPress:
-                                      () => _showFixedValueEditDialog(
-                                        e.key,
-                                        e.value.toString(),
-                                      ),
-                                ),
-                                DataCell(
-                                  Text(e.value.toString()),
-                                  onLongPress:
-                                      () => _showFixedValueEditDialog(
-                                        e.key,
-                                        e.value.toString(),
-                                      ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                    ),
-                  ),
+                  _buildFixedValuesTable(),
                   const Divider(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          '年別データ',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(width: 16),
-                        ElevatedButton.icon(
-                          onPressed: _showYearlyDataDialog,
-                          icon: const Icon(Icons.add_circle),
-                          label: const Text('追加'),
-                          style: acceptButtonStyle_,
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton.icon(
-                          onPressed: _showDeleteYearDialog,
-                          icon: const Icon(Icons.delete),
-                          label: const Text('削除'),
-                          style: dangerButtonStyle_,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (sheetData_!.yearlyRows.isNotEmpty)
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        columns:
-                            sheetData_!.yearlyHeaders
-                                .map<DataColumn>(
-                                  (col) =>
-                                      DataColumn(label: Text(col.toString())),
-                                )
-                                .toList(),
-                        rows:
-                            sheetData_!.yearlyRows.map((row) {
-                              return DataRow(
-                                onLongPress: () => _showEditYearlyDialog(row),
-                                cells:
-                                    sheetData_!.yearlyHeaders.map((h) {
-                                      return DataCell(Text(row[h] ?? ''));
-                                    }).toList(),
-                              );
-                            }).toList(),
-                      ),
-                    )
-                  else
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('年別データがまだありません'),
-                    ),
+                  _buildYearlyDataControls(),
+                  _buildYearlyDataTable(),
                 ],
               ),
             ),
