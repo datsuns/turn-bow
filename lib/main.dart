@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/sheet_service.dart';
+import 'services/sheet_data.dart';
 
 void main() {
   runApp(const MaterialApp(home: SheetListScreen()));
@@ -15,7 +16,7 @@ class SheetListScreen extends StatefulWidget {
 class _SheetListScreenState extends State<SheetListScreen> {
   List<String> sheetNames_ = [];
   String? selectedSheet_;
-  Map<String, dynamic>? sheetData_;
+  SheetData? sheetData_;
   TextEditingController yearController_ = TextEditingController();
   TextEditingController memoController_ = TextEditingController();
 
@@ -134,11 +135,9 @@ class _SheetListScreenState extends State<SheetListScreen> {
                 if (newValue.isEmpty) return;
 
                 try {
-                  await SheetService.updateFixedValue(
-                    selectedSheet_!,
-                    key,
-                    newValue,
-                  );
+                  await SheetService.updateFixedValue(selectedSheet_!, {
+                    key: newValue,
+                  });
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
                   _loadSheetData(selectedSheet_!);
@@ -296,7 +295,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
                         DataColumn(label: Text('値')),
                       ],
                       rows:
-                          sheetData_!['fixedValues'].entries.map<DataRow>((e) {
+                          sheetData_!.fixedValues.entries.map<DataRow>((e) {
                             return DataRow(
                               cells: [
                                 DataCell(
@@ -347,40 +346,27 @@ class _SheetListScreenState extends State<SheetListScreen> {
                       ],
                     ),
                   ),
-                  if (sheetData_!['yearlyData'].length > 1)
+                  if (sheetData_!.yearlyRows.isNotEmpty)
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
                         columns:
-                            (sheetData_!['yearlyData'][0]['header'] as List)
+                            sheetData_!.yearlyHeaders
                                 .map<DataColumn>(
                                   (col) =>
                                       DataColumn(label: Text(col.toString())),
                                 )
                                 .toList(),
-                        rows: List<DataRow>.generate(
-                          sheetData_!['yearlyData'].length - 1,
-                          (i) {
-                            final headers =
-                                sheetData_!['yearlyData'][0]['header'] as List;
-                            final row =
-                                sheetData_!['yearlyData'][i + 1]['data']
-                                    as List;
-                            // Map<String, dynamic> を構築して編集に渡す
-                            final rowData = <String, dynamic>{};
-                            for (int j = 0; j < headers.length; j++) {
-                              rowData[headers[j].toString()] =
-                                  j < row.length ? row[j] : '';
-                            }
-                            return DataRow(
-                              onLongPress: () => _showEditYearlyDialog(rowData),
-                              cells: List.generate(headers.length, (j) {
-                                final cell = j < row.length ? row[j] : '';
-                                return DataCell(Text(cell.toString()));
-                              }),
-                            );
-                          },
-                        ),
+                        rows:
+                            sheetData_!.yearlyRows.map((row) {
+                              return DataRow(
+                                onLongPress: () => _showEditYearlyDialog(row),
+                                cells:
+                                    sheetData_!.yearlyHeaders.map((h) {
+                                      return DataCell(Text(row[h] ?? ''));
+                                    }).toList(),
+                              );
+                            }).toList(),
                       ),
                     )
                   else
