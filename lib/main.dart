@@ -25,6 +25,8 @@ class _SheetListScreenState extends State<SheetListScreen> {
   ButtonStyle dangerButtonStyle_ = ElevatedButton.styleFrom(
     backgroundColor: Colors.amberAccent,
   );
+  Color colorRiceField_ = Colors.greenAccent;
+  Color colorEquipment_ = Colors.transparent;
 
   @override
   void initState() {
@@ -249,6 +251,16 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
+  Color decideDropDownColor(String name) {
+    if (name.startsWith('田んぼ_')) {
+      return colorRiceField_;
+    } else if (name.startsWith('機材_')) {
+      return colorEquipment_;
+    } else {
+      return Colors.transparent;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -260,7 +272,13 @@ class _SheetListScreenState extends State<SheetListScreen> {
             value: selectedSheet_,
             items:
                 sheetNames_.map((name) {
-                  return DropdownMenuItem(value: name, child: Text(name));
+                  return DropdownMenuItem(
+                    value: name,
+                    child: Container(
+                      color: decideDropDownColor(name),
+                      child: Text(name),
+                    ),
+                  );
                 }).toList(),
             onChanged: (value) {
               if (value != null) {
