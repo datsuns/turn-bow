@@ -70,4 +70,17 @@ class SheetService {
       throw Exception('更新に失敗しました: ${response.body}');
     }
   }
+
+  static Future<void> deleteYearlyData(String sheetName, String year) async {
+    final url = Uri.parse('$baseUrl?action=deleteYearly&sheetName=$sheetName');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'年': year}),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 302) {
+      throw Exception('削除に失敗しました: ${response.body}');
+    }
+  }
 }

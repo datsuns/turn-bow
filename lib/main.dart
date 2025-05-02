@@ -175,6 +175,43 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
+  void _showDeleteYearDialog() {
+    final yearController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('年別データを削除'),
+            content: TextField(
+              controller: yearController,
+              decoration: const InputDecoration(labelText: '削除する年'),
+              keyboardType: TextInputType.number,
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
+              ElevatedButton(
+                onPressed: () async {
+                  final year = yearController.text.trim();
+                  if (year.isEmpty) return;
+
+                  try {
+                    await SheetService.deleteYearlyData(selectedSheet_!, year);
+                    Navigator.of(context).pop();
+                    _loadSheetData(selectedSheet_!);
+                  } catch (e) {
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('削除失敗: $e')));
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('削除'),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -230,11 +267,15 @@ class _SheetListScreenState extends State<SheetListScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('📅 年別データ', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text('年別データ', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 16),
+                        ElevatedButton(onPressed: _showYearlyDataDialog, child: const Text('追加')),
+                        const SizedBox(width: 8),
                         ElevatedButton.icon(
-                          onPressed: _showYearlyDataDialog,
-                          icon: const Icon(Icons.add),
-                          label: const Text('追加'),
+                          onPressed: _showDeleteYearDialog,
+                          icon: const Icon(Icons.delete),
+                          label: const Text('削除'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                         ),
                       ],
                     ),
