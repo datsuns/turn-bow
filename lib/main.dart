@@ -172,41 +172,47 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
-  void _showDeleteYearDialog() {
+  void _showDeleteYearDialog(String? sheetName, SheetData? data) {
+    if (data == null || data.yearlyRows.isEmpty) return;
     final yearController = TextEditingController();
+    final years = data.yearlyRows.map((row) => row['年'] ?? '').where((year) => year != '').toSet().toList();
+    String selectedYear = years.first;
 
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('年別データを削除'),
-            content: TextField(
-              controller: yearController,
-              decoration: const InputDecoration(labelText: '削除する年'),
-              keyboardType: TextInputType.number,
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
-              ElevatedButton(
-                onPressed: () async {
-                  final year = yearController.text.trim();
-                  if (year.isEmpty) return;
-
-                  try {
-                    await SheetService.deleteYearlyData(selectedSheet_!, year);
-                    if (!context.mounted) return;
-                    Navigator.of(context).pop();
-                    _loadSheetData(selectedSheet_!);
-                  } catch (e) {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('削除失敗: $e')));
-                  }
-                },
-                style: dangerButtonStyle_,
-                child: const Text('削除'),
+      builder: (context) {
+        return StatefulBuilder(
+          builder:
+              (context, setState) => AlertDialog(
+                title: const Text('年別データを削除'),
+                content: DropdownButton<String>(
+                  value: selectedYear,
+                  items: years.map((year) => DropdownMenuItem(value: year, child: Text(year))).toList(),
+                  onChanged: (value) {
+                    if (value != null) setState(() => selectedYear = value);
+                  },
+                ),
+                actions: [
+                  TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
+                  ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await SheetService.deleteYearlyData(sheetName!, selectedYear);
+                        if (!context.mounted) return;
+                        Navigator.of(context).pop();
+                        _loadSheetData(sheetName);
+                      } catch (e) {
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('削除失敗: $e')));
+                      }
+                    },
+                    style: dangerButtonStyle_,
+                    child: const Text('削除'),
+                  ),
+                ],
               ),
-            ],
-          ),
+        );
+      },
     );
   }
 
@@ -371,7 +377,9 @@ class _SheetListScreenState extends State<SheetListScreen> {
               ),
               const SizedBox(width: 8),
               ElevatedButton.icon(
-                onPressed: _showDeleteYearDialog,
+                onPressed: () {
+                  _showDeleteYearDialog(selectedSheet_, sheetData_);
+                },
                 icon: const Icon(Icons.delete),
                 label: const Text('削除'),
                 style: dangerButtonStyle_,
