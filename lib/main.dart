@@ -41,22 +41,6 @@ class _SheetListScreenState extends State<SheetListScreen> {
     });
   }
 
-  Future<void> _submitYearlyData() async {
-    if (selectedSheet_ == null) return;
-    final data = {
-      '年': yearController_.text,
-      '収穫量': '310kg',
-      '苗の量': '10袋',
-      '肥料の量': '15kg',
-      '殺虫剤の量': '3L',
-      'メモ': memoController_.text,
-    };
-    await SheetService.postYearlyData(selectedSheet_!, data);
-    await _loadSheetData(selectedSheet_!); // 反映
-    yearController_.clear();
-    memoController_.clear();
-  }
-
   void _showYearlyDataDialog() {
     final yearController = TextEditingController();
     final memoController = TextEditingController();
