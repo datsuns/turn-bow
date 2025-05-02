@@ -68,4 +68,23 @@ class SheetService {
       throw Exception('削除に失敗しました: ${response.body}');
     }
   }
+
+static Future<void> createSheet({
+  required String sheetName,
+  required List<String> fixedKeys,
+  required List<String> yearlyKeys,
+}) async {
+  final url = Uri.parse('$baseUrl?action=createSheet&sheetName=$sheetName');
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode({
+      'fixedKeys': fixedKeys,
+      'yearlyKeys': yearlyKeys,
+    }),
+  );
+  if (response.statusCode != 200 || response.body.trim() != '作成完了') {
+    throw Exception('シート作成に失敗しました: \${response.body}');
+  }
+}
 }

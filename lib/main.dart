@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'services/sheet_service.dart';
 import 'services/sheet_data.dart';
 import 'services/sheet_type.dart';
+import 'services/sheet_templates.dart';
 
 void main() {
   runApp(const MaterialApp(home: SheetListScreen()));
@@ -209,6 +210,75 @@ class _SheetListScreenState extends State<SheetListScreen> {
     );
   }
 
+  void _showAddSheetDialog() {
+    final nameController = TextEditingController();
+    SheetType selectedType = SheetType.ricefield;
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setState) => AlertDialog(
+                  title: const Text('新しいシートを作成'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DropdownButton<SheetType>(
+                        value: selectedType,
+                        items:
+                            SheetType.values
+                                .where((e) => e != SheetType.unknown)
+                                .map(
+                                  (type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type == SheetType.ricefield ? '田んぼ' : '機材'),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => selectedType = value);
+                          }
+                        },
+                      ),
+                      TextField(controller: nameController, decoration: const InputDecoration(labelText: '名前（例：西南）')),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('キャンセル')),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final name = nameController.text.trim();
+                        if (name.isEmpty) return;
+                        final prefix = selectedType == SheetType.ricefield ? '田んぼ_' : '機材_';
+                        final sheetName = '$prefix$name';
+                        final template = sheetTemplates[selectedType];
+
+                        try {
+                          await SheetService.createSheet(
+                            sheetName: sheetName,
+                            fixedKeys: template?.fixedKeys ?? [],
+                            yearlyKeys: template?.yearlyKeys ?? [],
+                          );
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop();
+                          await _loadSheets();
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('シート作成失敗: \$e')));
+                        }
+                      },
+              style: acceptButtonStyle_,
+                      child: const Text('作成する'),
+                    ),
+                  ],
+                ),
+          ),
+    );
+  }
+
   Color decideDropDownColor(String name) {
     switch (SheetData.sheetNameToType(name)) {
       case SheetType.ricefield:
@@ -231,6 +301,21 @@ class _SheetListScreenState extends State<SheetListScreen> {
       onChanged: (value) {
         if (value != null) _loadSheetData(value);
       },
+    );
+  }
+
+  Widget _buildTitleBlock(String? sheetName, List<String> sheetNameList) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildDropdown(sheetName, sheetNameList),
+        ElevatedButton.icon(
+          onPressed: _showAddSheetDialog,
+          icon: const Icon(Icons.add),
+          label: const Text('シート追加'),
+          style: acceptButtonStyle_,
+        ),
+      ],
     );
   }
 
@@ -319,7 +404,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
       appBar: AppBar(title: const Text('田んぼ・機材リスト')),
       body: Column(
         children: [
-          _buildDropdown(selectedSheet_, sheetNames_),
+          _buildTitleBlock(selectedSheet_, sheetNames_),
           const Divider(),
           if (sheetData_ != null)
             Expanded(
