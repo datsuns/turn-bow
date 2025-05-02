@@ -270,7 +270,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('シート作成失敗: \$e')));
                         }
                       },
-              style: acceptButtonStyle_,
+                      style: acceptButtonStyle_,
                       child: const Text('作成する'),
                     ),
                   ],
@@ -292,7 +292,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
 
   Widget _buildDropdown(String? sheetName, List<String> sheetNameList) {
     return DropdownButton<String>(
-      hint: const Text('シートを選択'),
+      hint: const Text('選択'),
       value: sheetName,
       items:
           sheetNameList.map((name) {
@@ -309,10 +309,18 @@ class _SheetListScreenState extends State<SheetListScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildDropdown(sheetName, sheetNameList),
+        const SizedBox(width: 8),
+        ElevatedButton.icon(
+          onPressed: _loadSheets,
+          icon: const Icon(Icons.refresh),
+          label: const Text('再読込'),
+          style: acceptButtonStyle_,
+        ),
+        const SizedBox(width: 8),
         ElevatedButton.icon(
           onPressed: _showAddSheetDialog,
           icon: const Icon(Icons.add),
-          label: const Text('シート追加'),
+          label: const Text('追加'),
           style: acceptButtonStyle_,
         ),
       ],
@@ -357,7 +365,7 @@ class _SheetListScreenState extends State<SheetListScreen> {
             children: [
               ElevatedButton.icon(
                 onPressed: _showYearlyDataDialog,
-                icon: const Icon(Icons.add_circle),
+                icon: const Icon(Icons.add),
                 label: const Text('追加'),
                 style: acceptButtonStyle_,
               ),
